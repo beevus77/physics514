@@ -33,9 +33,8 @@ if __name__ == "__main__":
       dV_dry = np.zeros(N)
       lj.compute_forces(rx, ry, dV_drx, dV_dry, N, L, rcut)
 
-      # TODO: propagate using velocity Verlet
-      lj.euler(rx, ry, vx, vy, dV_drx, dV_dry)
-      # lj.velocity_verlet(rx, ry, vx, vy, dV_drx, dV_dry)
+      # propagate using velocity verlet
+      lj.velocity_verlet(rx, ry, vx, vy, dV_drx, dV_dry, N, L, rcut)
 
       # make sure we're still in the box
       lj.rebox(rx, ry, L)

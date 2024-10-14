@@ -176,8 +176,37 @@ def euler(rx, ry, vx, vy, dV_drx, dV_dry):
     vy -= deltat * dV_dry
 
 
-def velocity_verlet(rx, ry, vx, vy, dV_drx, dV_dry):
-    pass  # TODO: implement
+def velocity_verlet(rx, ry, vx, vy, dV_drx, dV_dry, N, L, rcut):
+    """
+    Perform a single step of the Velocity Verlet integration method.
+
+    This function updates the positions and velocities of particles using
+    the Velocity Verlet algorithm, which is a second-order symplectic integrator.
+
+    Args:
+    rx, ry (numpy.ndarray): Arrays of x and y positions of particles
+    vx, vy (numpy.ndarray): Arrays of x and y velocities of particles
+    dV_drx, dV_dry (numpy.ndarray): Arrays of x and y components of forces on particles
+    N (int): Number of particles
+    L (float): Box size for periodic boundary conditions
+    rcut (float): Cutoff radius for force calculation
+
+    Returns:
+    None: The function modifies rx, ry, vx, and vy in-place
+    """
+    deltat = 0.001
+    # update the positions
+    rx += deltat * vx + 0.5 * np.power(deltat, 2) * dV_drx
+    ry += deltat * vy + 0.5 * np.power(deltat, 2) * dV_dry
+
+    # update accelerations
+    dV_drx_next = np.zeros(N)
+    dV_dry_next = np.zeros(N)
+    compute_forces(rx, ry, dV_drx_next, dV_dry_next, N, L, rcut)
+    
+    # update the velocities
+    vx -= 0.5 * deltat * (dV_drx + dV_drx_next)
+    vy -= 0.5 * deltat * (dV_dry + dV_dry_next)
 
 
 def rebox(rx, ry, L):
