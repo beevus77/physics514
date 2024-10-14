@@ -205,8 +205,8 @@ def velocity_verlet(rx, ry, vx, vy, dV_drx, dV_dry, N, L, rcut):
     compute_forces(rx, ry, dV_drx_next, dV_dry_next, N, L, rcut)
     
     # update the velocities
-    vx -= 0.5 * deltat * (dV_drx + dV_drx_next)
-    vy -= 0.5 * deltat * (dV_dry + dV_dry_next)
+    vx += 0.5 * deltat * (dV_drx + dV_drx_next)
+    vy += 0.5 * deltat * (dV_dry + dV_dry_next)
 
 
 def rebox(rx, ry, L):
