@@ -1,6 +1,7 @@
 # import necessary dependencies
 import numpy as np
 import lennard_jones as lj
+from tqdm import tqdm
 
 
 if __name__ == "__main__":
@@ -23,7 +24,7 @@ if __name__ == "__main__":
     vylog = np.zeros([Nstep, N])
 
     lj.initialize_positions_and_velocities(rx, ry, vx, vy, Nx, Ny, L)
-    for i in range(Nstep):
+    for i in tqdm(range(Nstep)):
       dV_drx = np.zeros(N)
       dV_dry = np.zeros(N)
       lj.compute_forces(rx, ry, dV_drx, dV_dry, N, L, rcut)
@@ -44,7 +45,10 @@ if __name__ == "__main__":
       # get some observables
       Epot = lj.compute_potential_energy(rx, ry, rcut, L)
       Ekin = lj.compute_kinetic_energy(vx, vy)
-      print(i, Epot, Ekin, Epot + Ekin)
+      # Open the file in append mode
+      with open("HW_LJ/data/verification.dat", "w") as f:
+          # Write the current step, potential energy, kinetic energy, and total energy
+          f.write(f"{i} {Epot} {Ekin} {Epot + Ekin}\n")
       
     # print result
     lj.print_result(rxlog, rylog, vxlog, vylog)

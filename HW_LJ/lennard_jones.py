@@ -219,12 +219,10 @@ def print_result(rxlog, rylog, vxlog, vylog):
     Returns:
     None: The function writes data to 'positions.dat' and 'velocities.dat' files
     """
-    fr = open("positions.dat", 'w')
-    fv = open("velocities.dat", 'w')
-
-    for j in range(rxlog.shape[1]):
-        for i in range(rxlog.shape[0]):
-            fr.write(str(rxlog[i, j]) + " " + str(rylog[i, j]) + '\n')
-            fv.write(str(vxlog[i, j]) + " " + str(vylog[i, j]) + '\n')
-        fr.write('\n')
-        fv.write('\n')
+    with open("HW_LJ/data/positions.dat", 'w') as fr, open("HW_LJ/data/velocities.dat", 'w') as fv:
+        for j in range(rxlog.shape[1]):
+            for i in range(rxlog.shape[0]):
+                fr.write(str(rxlog[i, j]) + " " + str(rylog[i, j]) + '\n')
+                fv.write(str(vxlog[i, j]) + " " + str(vylog[i, j]) + '\n')
+            fr.write('\n')
+            fv.write('\n')
