@@ -2,7 +2,7 @@
 import numpy as np
 
 
-def initialize_positions_and_velocities(rx, ry, vx, vy, Nx, Ny, L):
+def initialize_positions_and_velocities(rx, ry, vx, vy, Nx, Ny, L, seed=0):
     """
     Initialize particle positions on a grid and velocities using Box-Muller transform.
   
@@ -17,7 +17,7 @@ def initialize_positions_and_velocities(rx, ry, vx, vy, Nx, Ny, L):
     """
     dx = L / Nx
     dy = L / Ny
-    np.random.seed(0)
+    np.random.seed(seed)
 
     for i in range(Nx):
         for j in range(Ny):
@@ -34,7 +34,6 @@ def initialize_positions_and_velocities(rx, ry, vx, vy, Nx, Ny, L):
     vyav = sum(vy) / vx.size
     vx -= vxav
     vy -= vyav
-
 
 def force(rsq):
     """
@@ -104,7 +103,7 @@ def potential(rsq):
     """
     rsqinv = 1. / rsq
     r6inv = rsqinv * rsqinv * rsqinv
-    return 4 * r6inv * (1 - r6inv)
+    return -4 * r6inv * (1 - r6inv)
 
 
 def compute_kinetic_energy(vx, vy):
@@ -200,13 +199,18 @@ def velocity_verlet(rx, ry, vx, vy, dV_drx, dV_dry, N, L, rcut):
     ry += deltat * vy + 0.5 * np.power(deltat, 2) * dV_dry
 
     # update accelerations
-    dV_drx_next = np.zeros(N)
-    dV_dry_next = np.zeros(N)
-    compute_forces(rx, ry, dV_drx_next, dV_dry_next, N, L, rcut)
+    vx += 0.5 * deltat * dV_drx
+    vy += 0.5 * deltat * dV_dry
+
+    # update the forces
+    dV_drx = np.zeros(N)
+    dV_dry = np.zeros(N)
+    compute_forces(rx, ry, dV_drx, dV_dry, N, L, rcut)
     
     # update the velocities
-    vx += 0.5 * deltat * (dV_drx + dV_drx_next)
-    vy += 0.5 * deltat * (dV_dry + dV_dry_next)
+    vx += 0.5 * deltat * dV_drx
+    vy += 0.5 * deltat * dV_dry
+
 
 
 def rebox(rx, ry, L):
@@ -225,13 +229,13 @@ def rebox(rx, ry, L):
     """
     for i in range(rx.size):
         if rx[i] > L:
-            rx[i] = rx[i] - L
+            rx[i] = rx[i] % L
         if rx[i] < 0:
-            rx[i] = rx[i] + L
+            rx[i] = rx[i] % L
         if ry[i] > L:
-            ry[i] = ry[i] - L
+            ry[i] = ry[i] % L
         if ry[i] < 0:
-            ry[i] = ry[i] + L
+            ry[i] = ry[i] % L
 
 
 def print_result(rxlog, rylog, vxlog, vylog, position_file="positions.csv", velocity_file="velocities.csv"):
@@ -248,7 +252,9 @@ def print_result(rxlog, rylog, vxlog, vylog, position_file="positions.csv", velo
     Returns:
     None: The function writes data to 'positions.dat' and 'velocities.dat' files
     """
+    # Open the position and velocity files for writing
     with open(position_file, 'w') as fr, open(velocity_file, 'w') as fv:
+        # Write the header for positions and velocities
         for i in range(rxlog.shape[1]):
             fr.write(f"x{i},y{i}")
             fv.write(f"vx{i},vy{i}")
@@ -257,6 +263,8 @@ def print_result(rxlog, rylog, vxlog, vylog, position_file="positions.csv", velo
                 fv.write(",")
         fr.write('\n')
         fv.write('\n')
+        
+        # Write the actual positions and velocities
         for i in range(rxlog.shape[0]):
             for j in range(rxlog.shape[1]):
                 fr.write(str(rxlog[i, j]) + "," + str(rylog[i, j]))
