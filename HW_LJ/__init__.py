@@ -7,13 +7,16 @@ from tqdm import tqdm
 if __name__ == "__main__":
 
     # Clear the contents of the verification file
-    with open("HW_LJ/data/verification.csv", "w") as f:
+    with open("HW_LJ/data/verification_small.csv", "w") as f:
         f.write("step,Epot,Ekin,Etot\n")  # write the header
 
     # simulation parameters
-    Nx = 5; Ny = 5; N = Nx * Ny  # set particles onto a grid initially
-    L = 5
-    Nstep = 10000
+    Nx = 2; Ny = 1; N = Nx * Ny  # set particles onto a grid initially
+    L = 2
+    Nstep = 1000
+    # Nx = 5; Ny = 5; N = Nx * Ny  # set particles onto a grid initially
+    # L = 5
+    # Nstep = 10000
     rcut = 2.5  # a usual choice for the cutoff radius
 
 
@@ -49,9 +52,9 @@ if __name__ == "__main__":
       Epot = lj.compute_potential_energy(rx, ry, rcut, L)
       Ekin = lj.compute_kinetic_energy(vx, vy)
       # Open the file in append mode
-      with open("HW_LJ/data/verification.csv", "a") as f:
+      with open("HW_LJ/data/verification_small.csv", "a") as f:
           # Write the current step, potential energy, kinetic energy, and total energy
           f.write(f"{i},{Epot},{Ekin},{Epot + Ekin}\n")
       
     # print result
-    lj.print_result(rxlog, rylog, vxlog, vylog)
+    lj.print_result(rxlog, rylog, vxlog, vylog, position_file="HW_LJ/data/positions_small.csv", velocity_file="HW_LJ/data/velocities_small.csv")

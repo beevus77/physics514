@@ -104,7 +104,7 @@ def potential(rsq):
     """
     rsqinv = 1. / rsq
     r6inv = rsqinv * rsqinv * rsqinv
-    return -4 * r6inv * (1 - r6inv)
+    return 4 * r6inv * (1 - r6inv)
 
 
 def compute_kinetic_energy(vx, vy):
@@ -234,7 +234,7 @@ def rebox(rx, ry, L):
             ry[i] = ry[i] + L
 
 
-def print_result(rxlog, rylog, vxlog, vylog):
+def print_result(rxlog, rylog, vxlog, vylog, position_file="positions.csv", velocity_file="velocities.csv"):
     """
     Write simulation results to output files.
 
@@ -248,12 +248,21 @@ def print_result(rxlog, rylog, vxlog, vylog):
     Returns:
     None: The function writes data to 'positions.dat' and 'velocities.dat' files
     """
-    with open("HW_LJ/data/positions.csv", 'w') as fr, open("HW_LJ/data/velocities.csv", 'w') as fv:
-        fr.write("x,y\n")
-        fv.write("vx,vy\n")
-        for j in range(rxlog.shape[1]):
-            for i in range(rxlog.shape[0]):
-                fr.write(str(rxlog[i, j]) + "," + str(rylog[i, j]) + '\n')
-                fv.write(str(vxlog[i, j]) + "," + str(vylog[i, j]) + '\n')
+    with open(position_file, 'w') as fr, open(velocity_file, 'w') as fv:
+        for i in range(rxlog.shape[1]):
+            fr.write(f"x{i},y{i}")
+            fv.write(f"vx{i},vy{i}")
+            if i != rxlog.shape[1] - 1:
+                fr.write(",")
+                fv.write(",")
+        fr.write('\n')
+        fv.write('\n')
+        for i in range(rxlog.shape[0]):
+            for j in range(rxlog.shape[1]):
+                fr.write(str(rxlog[i, j]) + "," + str(rylog[i, j]))
+                fv.write(str(vxlog[i, j]) + "," + str(vylog[i, j]))
+                if j != rxlog.shape[1] - 1:
+                    fr.write(",")
+                    fv.write(",")
             fr.write('\n')
             fv.write('\n')
