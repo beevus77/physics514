@@ -47,7 +47,7 @@ def force(rsq):
     float: The force between the particles
     """
     rinv = np.sqrt(1. / rsq)
-    return 24 * np.power(rinv,7) * (1 - 2*np.power(rinv,6))
+    return -24 * np.power(rinv,7) * (1 - 2*np.power(rinv,6))
 
 
 def compute_forces(rx, ry, dV_drx, dV_dry, N, L, rcut):
@@ -248,10 +248,12 @@ def print_result(rxlog, rylog, vxlog, vylog):
     Returns:
     None: The function writes data to 'positions.dat' and 'velocities.dat' files
     """
-    with open("HW_LJ/data/positions.dat", 'w') as fr, open("HW_LJ/data/velocities.dat", 'w') as fv:
+    with open("HW_LJ/data/positions.csv", 'w') as fr, open("HW_LJ/data/velocities.csv", 'w') as fv:
+        fr.write("x,y\n")
+        fv.write("vx,vy\n")
         for j in range(rxlog.shape[1]):
             for i in range(rxlog.shape[0]):
-                fr.write(str(rxlog[i, j]) + " " + str(rylog[i, j]) + '\n')
-                fv.write(str(vxlog[i, j]) + " " + str(vylog[i, j]) + '\n')
+                fr.write(str(rxlog[i, j]) + "," + str(rylog[i, j]) + '\n')
+                fv.write(str(vxlog[i, j]) + "," + str(vylog[i, j]) + '\n')
             fr.write('\n')
             fv.write('\n')

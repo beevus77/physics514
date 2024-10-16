@@ -7,8 +7,8 @@ from tqdm import tqdm
 if __name__ == "__main__":
 
     # Clear the contents of the verification file
-    with open("HW_LJ/data/verification.dat", "w") as f:
-        pass  # Clear the file
+    with open("HW_LJ/data/verification.csv", "w") as f:
+        f.write("step,Epot,Ekin,Etot\n")  # write the header
 
     # simulation parameters
     Nx = 5; Ny = 5; N = Nx * Ny  # set particles onto a grid initially
@@ -49,9 +49,9 @@ if __name__ == "__main__":
       Epot = lj.compute_potential_energy(rx, ry, rcut, L)
       Ekin = lj.compute_kinetic_energy(vx, vy)
       # Open the file in append mode
-      with open("HW_LJ/data/verification.dat", "a") as f:
+      with open("HW_LJ/data/verification.csv", "a") as f:
           # Write the current step, potential energy, kinetic energy, and total energy
-          f.write(f"{i} {Epot} {Ekin} {Epot + Ekin}\n")
+          f.write(f"{i},{Epot},{Ekin},{Epot + Ekin}\n")
       
     # print result
     lj.print_result(rxlog, rylog, vxlog, vylog)
