@@ -2,7 +2,7 @@
 import numpy as np
 
 
-def initialize_positions_and_velocities(rx, ry, vx, vy, Nx, Ny, L):
+def initialize_positions_and_velocities(rx, ry, vx, vy, Nx, Ny, L, seed=0):
     """
     Initialize particle positions on a grid and velocities using Box-Muller transform.
   
@@ -17,7 +17,7 @@ def initialize_positions_and_velocities(rx, ry, vx, vy, Nx, Ny, L):
     """
     dx = L / Nx
     dy = L / Ny
-    np.random.seed(0)
+    np.random.seed(seed)
 
     for i in range(Nx):
         for j in range(Ny):
@@ -35,7 +35,6 @@ def initialize_positions_and_velocities(rx, ry, vx, vy, Nx, Ny, L):
     vx -= vxav
     vy -= vyav
 
-
 def force(rsq):
     """
     Calculate the force between two particles (derivative of Lennard-Jones potential).
@@ -47,7 +46,7 @@ def force(rsq):
     float: The force between the particles
     """
     rinv = np.sqrt(1. / rsq)
-    return 24 * np.power(rinv,7) * (1 - 2*np.power(rinv,6))
+    return -24 * np.power(rinv,8) * (1 - 2*np.power(rinv,6))
 
 
 def compute_forces(rx, ry, dV_drx, dV_dry, N, L, rcut):
@@ -176,8 +175,42 @@ def euler(rx, ry, vx, vy, dV_drx, dV_dry):
     vy -= deltat * dV_dry
 
 
-def velocity_verlet(rx, ry, vx, vy, dV_drx, dV_dry):
-    pass  # TODO: implement
+def velocity_verlet(rx, ry, vx, vy, dV_drx, dV_dry, N, L, rcut):
+    """
+    Perform a single step of the Velocity Verlet integration method.
+
+    This function updates the positions and velocities of particles using
+    the Velocity Verlet algorithm, which is a second-order symplectic integrator.
+
+    Args:
+    rx, ry (numpy.ndarray): Arrays of x and y positions of particles
+    vx, vy (numpy.ndarray): Arrays of x and y velocities of particles
+    dV_drx, dV_dry (numpy.ndarray): Arrays of x and y components of forces on particles
+    N (int): Number of particles
+    L (float): Box size for periodic boundary conditions
+    rcut (float): Cutoff radius for force calculation
+
+    Returns:
+    None: The function modifies rx, ry, vx, and vy in-place
+    """
+    deltat = 0.001
+    # update the positions
+    rx += deltat * vx + 0.5 * np.power(deltat, 2) * dV_drx
+    ry += deltat * vy + 0.5 * np.power(deltat, 2) * dV_dry
+
+    # update accelerations
+    vx += 0.5 * deltat * dV_drx
+    vy += 0.5 * deltat * dV_dry
+
+    # update the forces
+    dV_drx = np.zeros(N)
+    dV_dry = np.zeros(N)
+    compute_forces(rx, ry, dV_drx, dV_dry, N, L, rcut)
+    
+    # update the velocities
+    vx += 0.5 * deltat * dV_drx
+    vy += 0.5 * deltat * dV_dry
+
 
 
 def rebox(rx, ry, L):
@@ -196,16 +229,16 @@ def rebox(rx, ry, L):
     """
     for i in range(rx.size):
         if rx[i] > L:
-            rx[i] = rx[i] - L
+            rx[i] = rx[i] % L
         if rx[i] < 0:
-            rx[i] = rx[i] + L
+            rx[i] = rx[i] % L
         if ry[i] > L:
-            ry[i] = ry[i] - L
+            ry[i] = ry[i] % L
         if ry[i] < 0:
-            ry[i] = ry[i] + L
+            ry[i] = ry[i] % L
 
 
-def print_result(rxlog, rylog, vxlog, vylog):
+def print_result(rxlog, rylog, vxlog, vylog, position_file="positions.csv", velocity_file="velocities.csv"):
     """
     Write simulation results to output files.
 
@@ -219,10 +252,25 @@ def print_result(rxlog, rylog, vxlog, vylog):
     Returns:
     None: The function writes data to 'positions.dat' and 'velocities.dat' files
     """
-    with open("HW_LJ/data/positions.dat", 'w') as fr, open("HW_LJ/data/velocities.dat", 'w') as fv:
-        for j in range(rxlog.shape[1]):
-            for i in range(rxlog.shape[0]):
-                fr.write(str(rxlog[i, j]) + " " + str(rylog[i, j]) + '\n')
-                fv.write(str(vxlog[i, j]) + " " + str(vylog[i, j]) + '\n')
+    # Open the position and velocity files for writing
+    with open(position_file, 'w') as fr, open(velocity_file, 'w') as fv:
+        # Write the header for positions and velocities
+        for i in range(rxlog.shape[1]):
+            fr.write(f"x{i},y{i}")
+            fv.write(f"vx{i},vy{i}")
+            if i != rxlog.shape[1] - 1:
+                fr.write(",")
+                fv.write(",")
+        fr.write('\n')
+        fv.write('\n')
+        
+        # Write the actual positions and velocities
+        for i in range(rxlog.shape[0]):
+            for j in range(rxlog.shape[1]):
+                fr.write(str(rxlog[i, j]) + "," + str(rylog[i, j]))
+                fv.write(str(vxlog[i, j]) + "," + str(vylog[i, j]))
+                if j != rxlog.shape[1] - 1:
+                    fr.write(",")
+                    fv.write(",")
             fr.write('\n')
             fv.write('\n')
