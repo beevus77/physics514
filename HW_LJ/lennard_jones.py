@@ -46,7 +46,7 @@ def force(rsq):
     float: The force between the particles
     """
     rinv = np.sqrt(1. / rsq)
-    return -24 * np.power(rinv,7) * (1 - 2*np.power(rinv,6))
+    return -24 * np.power(rinv,8) * (1 - 2*np.power(rinv,6))
 
 
 def compute_forces(rx, ry, dV_drx, dV_dry, N, L, rcut):
